@@ -1,0 +1,713 @@
+<!doctype html>
+<html lang="sk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TechBeam — Softvér na zákazku</title>
+<meta name="description" content="TechBeam je štvorčlenné softvérové štúdio zo Slovenska. Staviame softvér na zákazku a popri tom vlastné produkty.">
+<meta name="theme-color" content="#08090b">
+<meta property="og:type" content="website">
+<meta property="og:title" content="TechBeam — Softvér na zákazku">
+<meta property="og:description" content="Štvorčlenné softvérové štúdio zo Slovenska. Softvér na zákazku a vlastné produkty.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2308090b'/%3E%3Cpath d='M16 6 L26 25 H6 Z' fill='none' stroke='%23ffb020' stroke-width='1.8' stroke-linejoin='round'/%3E%3Cpath d='M2 17 H12' stroke='%23e9ecef' stroke-width='1.8'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   TechBeam — design tokens
+   ============================================================ */
+:root{
+  --bg:#08090b; --bg-2:#0a0c0f; --surface:#0e1116; --surface-2:#12161c;
+  --line:#1a1f26; --line-2:#252b34;
+  --fg:#e9ecef; --fg-2:#9ba3ad; --fg-3:#7c848f;
+  --beam:#ffb020; --beam-2:#ffd08a; --signal:#7fd3de;
+  --sans:"Instrument Sans","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --serif:"Instrument Serif","Times New Roman",Times,serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --gut:clamp(20px,5vw,64px);
+  --max:1240px;
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--fg);
+  font-family:var(--sans);font-size:1.0625rem;line-height:1.62;
+  font-weight:400;letter-spacing:-.008em;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+  overflow-x:hidden;
+}
+/* film grain — atmosphere without gradients */
+body::after{
+  content:"";position:fixed;inset:0;z-index:9999;pointer-events:none;opacity:.032;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+img,svg{display:block;max-width:100%}
+a{color:var(--fg);text-decoration:none;transition:color .25s var(--ease)}
+a:hover{color:var(--beam)}
+h1,h2,h3,h4{margin:0;font-weight:600;letter-spacing:-.035em;line-height:1.02;text-wrap:balance}
+p{margin:0;text-wrap:pretty}
+::selection{background:var(--beam);color:#08090b}
+:focus-visible{outline:2px solid var(--beam);outline-offset:3px;border-radius:2px}
+
+.wrap{width:100%;max-width:var(--max);margin-inline:auto;padding-inline:var(--gut);position:relative;z-index:2}
+.sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* mono label */
+.lab{font-family:var(--mono);font-size:.6875rem;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--fg-3)}
+.lab .n{color:var(--beam)}
+.s{font-family:var(--serif);font-style:italic;font-weight:400;letter-spacing:-.015em}
+
+/* placeholder chip — content the team still has to fill in */
+.ph{font-family:var(--mono);font-size:.72rem;font-weight:500;letter-spacing:.1em;
+  color:#d0973d;background:rgba(255,176,32,.055);border:1px dashed rgba(255,176,32,.34);
+  padding:.3em .65em;border-radius:2px;display:inline-block;white-space:nowrap;line-height:1.3}
+
+/* ============================================================ NAV */
+.nav{position:fixed;inset:0 0 auto 0;z-index:100;transition:background .35s var(--ease),border-color .35s var(--ease),backdrop-filter .35s var(--ease);border-bottom:1px solid transparent}
+.nav.on{background:rgba(8,9,11,.78);backdrop-filter:blur(16px) saturate(140%);-webkit-backdrop-filter:blur(16px) saturate(140%);border-bottom-color:var(--line)}
+.nav .wrap{display:flex;align-items:center;gap:clamp(16px,3vw,40px);height:72px}
+.brand{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.brand svg{width:22px;height:22px;overflow:visible}
+.brand b{font-weight:600;font-size:1.0625rem;letter-spacing:-.03em}
+.brand .dot{width:4px;height:4px;background:var(--beam);border-radius:50%;margin-left:1px;align-self:flex-end;margin-bottom:7px;box-shadow:0 0 8px var(--beam)}
+.nlinks{display:flex;gap:clamp(14px,2vw,28px);margin-left:auto;align-items:center}
+.nlinks a{font-size:.9rem;color:var(--fg-2);letter-spacing:-.005em}
+.nlinks a:hover{color:var(--fg)}
+.ntail{display:flex;align-items:center;gap:14px;margin-left:clamp(10px,2vw,24px)}
+.lang{display:flex;border:1px solid var(--line-2);border-radius:3px;overflow:hidden;font-family:var(--mono);font-size:.68rem;letter-spacing:.08em}
+.lang button{background:none;border:0;color:var(--fg-3);padding:5px 9px;cursor:pointer;font:inherit;transition:.25s var(--ease)}
+.lang button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+.lang button:not([aria-pressed="true"]):hover{color:var(--fg)}
+.btn{display:inline-flex;align-items:center;gap:9px;font-size:.9rem;font-weight:500;letter-spacing:-.01em;
+  padding:10px 18px;border-radius:3px;border:1px solid var(--line-2);color:var(--fg);
+  transition:.3s var(--ease);white-space:nowrap;background:none;cursor:pointer;font-family:inherit}
+.btn:hover{border-color:var(--fg-3);color:var(--fg);background:rgba(255,255,255,.035)}
+.btn-p{background:var(--beam);color:#0a0b0d;border-color:var(--beam);font-weight:600}
+.btn-p:hover{background:var(--beam-2);border-color:var(--beam-2);color:#0a0b0d}
+.btn-lg{padding:14px 24px;font-size:.95rem}
+.btn svg{width:15px;height:15px;transition:transform .3s var(--ease)}
+.btn:hover svg{transform:translateX(3px)}
+.burger{display:none;background:none;border:1px solid var(--line-2);border-radius:3px;padding:9px;cursor:pointer}
+.burger span{display:block;width:16px;height:1px;background:var(--fg);transition:.3s var(--ease)}
+.burger span+span{margin-top:5px}
+.burger[aria-expanded="true"] span:first-child{transform:translateY(3px) rotate(45deg)}
+.burger[aria-expanded="true"] span:last-child{transform:translateY(-3px) rotate(-45deg)}
+#menu{position:fixed;inset:72px 0 0 0;z-index:99;background:var(--bg);
+  display:flex;flex-direction:column;padding:32px var(--gut) 48px;gap:2px;
+  opacity:0;visibility:hidden;transform:translateY(-8px);transition:.35s var(--ease);border-top:1px solid var(--line)}
+#menu.on{opacity:1;visibility:visible;transform:none}
+#menu a{font-size:1.6rem;font-weight:600;letter-spacing:-.03em;padding:14px 0;border-bottom:1px solid var(--line)}
+#menu .btn{margin-top:24px;justify-content:center}
+
+/* ============================================================ HERO */
+.hero{position:relative;padding:clamp(120px,17vh,190px) 0 clamp(64px,9vh,96px);overflow:hidden}
+.hero::before{ /* technical grid, masked */
+  content:"";position:absolute;inset:-1px 0 auto 0;height:min(880px,105%);pointer-events:none;
+  background-image:linear-gradient(to right,rgba(255,255,255,.045) 1px,transparent 1px),
+                   linear-gradient(to bottom,rgba(255,255,255,.045) 1px,transparent 1px);
+  background-size:76px 76px;
+  -webkit-mask-image:radial-gradient(115% 78% at 50% 0%,#000 0%,transparent 72%);
+  mask-image:radial-gradient(115% 78% at 50% 0%,#000 0%,transparent 72%);
+}
+.hero::after{ /* beam bloom from top */
+  content:"";position:absolute;top:-340px;left:50%;transform:translateX(-50%);
+  width:min(1100px,150vw);height:760px;pointer-events:none;
+  background:radial-gradient(ellipse 46% 50% at 50% 50%,rgba(255,176,32,.16),transparent 70%);
+  filter:blur(24px);
+}
+.hero .wrap{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.82fr);gap:clamp(32px,5vw,72px);align-items:center}
+.eyebrow{display:inline-flex;align-items:center;gap:10px;margin-bottom:clamp(20px,3vw,30px)}
+.eyebrow .pulse{width:6px;height:6px;border-radius:50%;background:var(--beam);box-shadow:0 0 0 0 rgba(255,176,32,.55);animation:pulse 3.2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,176,32,.5)}70%{box-shadow:0 0 0 9px rgba(255,176,32,0)}100%{box-shadow:0 0 0 0 rgba(255,176,32,0)}}
+h1{font-size:clamp(2.6rem,6.6vw,5.1rem);line-height:.96;letter-spacing:-.045em;font-weight:600}
+h1 .s{font-size:1.06em;letter-spacing:-.025em}
+.hero .sub{margin-top:clamp(20px,3vw,30px);font-size:clamp(1.02rem,1.5vw,1.19rem);color:var(--fg-2);max-width:50ch;line-height:1.58}
+.hero .cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:clamp(28px,4vw,40px)}
+.trust{margin-top:clamp(40px,6vw,60px);padding-top:22px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;align-items:center;gap:14px 26px}
+.trust .names{display:flex;flex-wrap:wrap;gap:10px 24px}
+.trust .names span{font-size:.94rem;font-weight:600;letter-spacing:-.02em;color:var(--fg-2)}
+
+/* optics diagram */
+.optics{width:100%;height:auto;overflow:visible}
+.optics .grid{stroke:rgba(255,255,255,.06);stroke-width:1}
+.optics .ring{fill:none;stroke:rgba(255,255,255,.07);stroke-width:1}
+.optics .prism{fill:rgba(255,176,32,.04);stroke:rgba(255,176,32,.55);stroke-width:1.4;stroke-linejoin:round}
+.optics .in{stroke:var(--fg);stroke-width:1.4;filter:drop-shadow(0 0 6px rgba(255,255,255,.55))}
+.optics .out{stroke-width:1.4;stroke-linecap:round;filter:drop-shadow(0 0 4px currentColor)}
+.optics .tick{stroke:rgba(255,255,255,.16);stroke-width:1}
+.optics text{font-family:var(--mono);font-size:11px;letter-spacing:.16em;fill:#7c848e}
+.optics .draw{stroke-dasharray:520;stroke-dashoffset:520;animation:draw 1.5s var(--ease) forwards}
+.optics .d1{animation-delay:.35s}.optics .d2{animation-delay:.5s}.optics .d3{animation-delay:.65s}.optics .d4{animation-delay:.8s}
+@keyframes draw{to{stroke-dashoffset:0}}
+.optics .photon{fill:#fff;animation:travel 4.4s var(--ease) infinite;opacity:0}
+@keyframes travel{0%{opacity:0;transform:translateX(0)}8%{opacity:1}55%{opacity:1;transform:translateX(160px)}62%{opacity:0;transform:translateX(160px)}100%{opacity:0;transform:translateX(160px)}}
+.optics .lbl{opacity:0;animation:fadein .8s var(--ease) forwards}
+
+/* ============================================================ SECTIONS */
+section{scroll-margin-top:80px}
+.sec{border-top:1px solid var(--line);position:relative;padding:clamp(72px,10vw,132px) 0}
+.sec::before{content:"";position:absolute;top:-3px;left:max(var(--gut), calc(50% - var(--max)/2 + var(--gut)));width:5px;height:5px;background:var(--beam);
+  transform:rotate(45deg);box-shadow:0 0 10px rgba(255,176,32,.7);z-index:1}
+.sec::after,.foot::after{content:"";position:absolute;top:0;bottom:0;left:max(var(--gut), calc(50% - var(--max)/2 + var(--gut)));width:1px;
+  background:rgba(255,255,255,.045);pointer-events:none}
+.head{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.72fr);gap:clamp(24px,5vw,72px);align-items:end;margin-bottom:clamp(44px,6vw,72px)}
+.head h2{font-size:clamp(2rem,4.3vw,3.4rem);letter-spacing:-.042em;line-height:1.0}
+.head h2 .s{font-size:1.07em;letter-spacing:-.02em}
+.head .lab{display:block;margin-bottom:clamp(16px,2vw,22px)}
+.head .note{color:var(--fg-2);font-size:1.02rem;max-width:44ch;padding-bottom:.4em}
+
+/* two-track panels */
+.tracks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:4px;overflow:hidden;margin-bottom:clamp(28px,4vw,44px)}
+.track{background:var(--surface);padding:clamp(28px,3.6vw,44px);position:relative;transition:background .35s var(--ease)}
+.track:hover{background:var(--surface-2)}
+.track .k{font-family:var(--mono);font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--beam);display:block;margin-bottom:20px}
+.track h3{font-size:clamp(1.4rem,2.2vw,1.85rem);letter-spacing:-.035em;margin-bottom:14px}
+.track p{color:var(--fg-2);font-size:1rem;max-width:40ch}
+.track .more{display:inline-flex;align-items:center;gap:8px;margin-top:22px;font-size:.88rem;font-family:var(--mono);letter-spacing:.06em;color:var(--fg-3)}
+.track .more:hover{color:var(--beam)}
+.track .more svg{width:13px;height:13px;transition:transform .3s var(--ease)}
+.track:hover .more svg{transform:translateX(3px)}
+
+/* capability grid */
+.caps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.cap{background:var(--surface);padding:clamp(24px,2.6vw,32px);transition:background .35s var(--ease)}
+.cap:hover{background:var(--surface-2)}
+.cap .ico{width:26px;height:26px;color:var(--beam);margin-bottom:26px;opacity:.9}
+.cap h4{font-size:1.0625rem;letter-spacing:-.025em;margin-bottom:9px;font-weight:600}
+.cap p{font-size:.9rem;color:var(--fg-2);line-height:1.55}
+
+/* process */
+.steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(20px,2.6vw,36px)}
+.step{padding-top:26px;border-top:1px solid var(--line-2);position:relative}
+.step::before{content:"";position:absolute;top:-1px;left:0;width:26px;height:1px;background:var(--beam);
+  transition:width .55s var(--ease)}
+.step:hover::before{width:100%}
+.step .num{font-family:var(--mono);font-size:.7rem;letter-spacing:.16em;color:var(--beam);display:block;margin-bottom:16px}
+.step h4{font-size:1.2rem;letter-spacing:-.03em;margin-bottom:10px}
+.step p{font-size:.93rem;color:var(--fg-2);line-height:1.55}
+
+/* team */
+.team{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.mem{background:var(--surface);padding:clamp(30px,3vw,38px) clamp(26px,2.8vw,34px) clamp(34px,3.4vw,42px);transition:background .35s var(--ease);position:relative;overflow:hidden}
+.mem:hover{background:var(--surface-2)}
+.mem .mark{position:relative;width:76px;height:76px;display:grid;place-items:center;margin-bottom:clamp(32px,3.6vw,46px)}
+.mem .mark svg{position:absolute;inset:0;width:76px;height:76px;color:var(--line-2);transition:color .45s var(--ease)}
+.mem:hover .mark svg{color:rgba(255,176,32,.55)}
+.mem .mark i{font-style:normal;font-family:var(--mono);font-size:1.02rem;font-weight:500;letter-spacing:.08em;color:var(--fg-2);position:relative;transition:color .45s var(--ease);transform:translateY(6px)}
+.mem:hover .mark i{color:var(--beam)}
+.mem h4{font-size:1.2rem;letter-spacing:-.03em;margin-bottom:14px}
+.mem .role{display:block}
+
+/* partners */
+.partners{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.pt{background:var(--surface);padding:clamp(38px,5vw,64px) clamp(24px,3vw,36px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;min-height:190px;transition:background .35s var(--ease)}
+.pt:hover{background:var(--surface-2)}
+.pt .wm{font-size:clamp(1.5rem,2.6vw,2.05rem);font-weight:600;letter-spacing:-.04em;color:var(--fg-2);transition:color .35s var(--ease);text-align:center;line-height:1.1}
+.pt:hover .wm{color:var(--fg)}
+.pt .tag{font-family:var(--mono);font-size:.63rem;letter-spacing:.2em;text-transform:uppercase;color:var(--fg-3)}
+
+/* projects */
+.projs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(16px,1.8vw,22px)}
+.proj{grid-column:span 2;background:var(--surface);border:1px solid var(--line);border-radius:4px;
+  padding:clamp(30px,4vw,52px);position:relative;overflow:hidden;min-height:300px;
+  display:flex;flex-direction:column;transition:border-color .4s var(--ease),background .4s var(--ease)}
+.proj:hover{border-color:var(--line-2);background:var(--surface-2)}
+.proj .rays{position:absolute;top:0;right:0;width:min(300px,52%);height:100%;pointer-events:none;opacity:.55}
+.proj .top{display:flex;align-items:center;gap:12px;margin-bottom:auto;position:relative;z-index:2}
+.proj .tag{font-family:var(--mono);font-size:.63rem;letter-spacing:.2em;text-transform:uppercase;color:var(--fg-3);
+  border:1px solid var(--line-2);border-radius:2px;padding:.35em .7em}
+.proj .body{position:relative;z-index:2;padding-top:clamp(40px,6vw,72px)}
+.proj h3{font-size:clamp(2rem,4.2vw,3.1rem);letter-spacing:-.045em;margin-bottom:18px}
+.proj .desc{max-width:42ch}
+.slot{background:transparent;border:1px dashed var(--line-2);border-radius:4px;padding:clamp(26px,3vw,34px);
+  display:flex;flex-direction:column;justify-content:space-between;gap:26px;min-height:300px;transition:border-color .4s var(--ease)}
+.slot:hover{border-color:rgba(255,176,32,.3)}
+.slot .plus{width:22px;height:22px;color:var(--fg-3)}
+.slot .t{font-size:1.05rem;color:var(--fg-3);letter-spacing:-.02em}
+
+/* ============================================================ FOOTER */
+.foot{border-top:1px solid var(--line);position:relative;padding:clamp(72px,10vw,120px) 0 40px}
+.foot::before{content:"";position:absolute;top:-3px;left:max(var(--gut), calc(50% - var(--max)/2 + var(--gut)));width:5px;height:5px;background:var(--beam);transform:rotate(45deg);box-shadow:0 0 10px rgba(255,176,32,.7);z-index:1}
+.foot h2{font-size:clamp(2.1rem,5.6vw,4.2rem);letter-spacing:-.045em;line-height:1.0;max-width:16ch}
+.foot h2 .s{font-size:1.07em}
+.contact{display:flex;flex-wrap:wrap;gap:clamp(24px,4vw,56px);margin-top:clamp(34px,4vw,52px);padding-bottom:clamp(56px,8vw,96px);border-bottom:1px solid var(--line)}
+.cbit{display:flex;flex-direction:column;gap:12px}
+.cbit .lab{display:block}
+.fbot{display:flex;flex-wrap:wrap;gap:20px 32px;align-items:center;padding-top:32px}
+.fbot .c{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;color:var(--fg-3)}
+.flinks{display:flex;flex-wrap:wrap;gap:8px 22px;margin-left:auto}
+.flinks a{font-size:.86rem;color:var(--fg-3)}
+.flinks a:hover{color:var(--fg)}
+
+/* ============================================================ REVEAL */
+.r{opacity:0;transform:translateY(16px);transition:opacity .8s var(--ease),transform .8s var(--ease);transition-delay:var(--d,0ms)}
+.r.in{opacity:1;transform:none}
+@keyframes fadein{to{opacity:1}}
+
+/* ============================================================ RESPONSIVE */
+@media(max-width:1080px){
+  .caps,.steps,.team{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .hero .wrap{grid-template-columns:1fr}
+  .optics{max-width:520px;margin-top:8px}
+  .head{grid-template-columns:1fr;align-items:start}
+  .head .note{padding-bottom:0}
+}
+@media(max-width:860px){
+  .nlinks{display:none}
+  .ntail{margin-left:auto}
+  .ntail .btn{display:none}
+  .burger{display:block}
+  .tracks{grid-template-columns:1fr}
+  .projs{grid-template-columns:1fr}
+  .proj{grid-column:span 1}
+  .partners{grid-template-columns:1fr}
+  .pt{min-height:140px}
+}
+@media(max-width:620px){
+  .sec::after,.foot::after{display:none}
+  .caps,.steps,.team{grid-template-columns:1fr}
+  .steps{gap:0}
+  .step{padding:24px 0}
+  .step:first-child{padding-top:0;border-top:0}
+  .step:first-child::before{display:none}
+  h1{font-size:clamp(2.35rem,10vw,3.2rem)}
+  .trust{flex-direction:column;align-items:flex-start;gap:14px}
+}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+  .r{opacity:1;transform:none}
+  .optics .draw{stroke-dashoffset:0}
+  .optics .lbl{opacity:1}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════ NAV ══════════════════════════════ -->
+<header class="nav" id="nav">
+  <div class="wrap">
+    <a href="#top" class="brand" aria-label="TechBeam">
+      <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <path d="M16 6 L26 25 H6 Z" stroke="#ffb020" stroke-width="1.6" stroke-linejoin="round"/>
+        <path d="M0 17 H11.5" stroke="#e9ecef" stroke-width="1.6"/>
+        <path d="M20.5 14 L32 9" stroke="#ffb020" stroke-width="1.2" opacity=".85"/>
+        <path d="M21.5 18 L32 17" stroke="#ffd08a" stroke-width="1.2" opacity=".7"/>
+        <path d="M22.5 22 L32 25" stroke="#7fd3de" stroke-width="1.2" opacity=".6"/>
+      </svg>
+      <b>TechBeam</b><span class="dot"></span>
+    </a>
+    <nav class="nlinks" aria-label="Hlavná navigácia">
+      <a href="#sluzby" data-en="Services">Služby</a>
+      <a href="#proces" data-en="Process">Proces</a>
+      <a href="#tim" data-en="Team">Tím</a>
+      <a href="#partneri" data-en="Partners">Partneri</a>
+      <a href="#projekty" data-en="Projects">Projekty</a>
+    </nav>
+    <div class="ntail">
+      <div class="lang" role="group" aria-label="Jazyk / Language">
+        <button type="button" data-lang="sk" aria-pressed="true">SK</button>
+        <button type="button" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+      <a href="#kontakt" class="btn btn-p" data-en="Contact">Kontakt</a>
+      <button class="burger" id="burger" aria-expanded="false" aria-controls="menu" aria-label="Menu">
+        <span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+<div id="menu">
+  <a href="#sluzby" data-en="Services">Služby</a>
+  <a href="#proces" data-en="Process">Proces</a>
+  <a href="#tim" data-en="Team">Tím</a>
+  <a href="#partneri" data-en="Partners">Partneri</a>
+  <a href="#projekty" data-en="Projects">Projekty</a>
+  <a href="#kontakt" class="btn btn-p btn-lg" data-en="Contact">Kontakt</a>
+</div>
+
+<main id="top">
+
+<!-- ══════════════════════════════ HERO ══════════════════════════════ -->
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <div class="eyebrow r"><span class="pulse"></span><span class="lab" data-en="Software studio &middot; Slovakia">Softvérové štúdio &middot; Slovensko</span></div>
+      <h1 class="r" style="--d:70ms" data-en="We build software that <span class='s'>holds up</span>.">Staviame softvér, ktorý <span class="s">vydrží</span>.</h1>
+      <p class="sub r" style="--d:140ms" data-en="TechBeam is a four-person software studio. We build custom software for clients — and in parallel we build our own products. Everything we learn on one side goes straight back into the other.">TechBeam je štvorčlenné softvérové štúdio. Robíme softvér na zákazku pre klientov — a popri tom staviame vlastné produkty. Všetko, čo sa naučíme na jednej strane, ide späť do tej druhej.</p>
+      <div class="cta r" style="--d:210ms">
+        <a href="#kontakt" class="btn btn-p btn-lg" data-en="Start a project">Máme projekt
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8h11M9 4l4 4-4 4"/></svg>
+        </a>
+        <a href="#sluzby" class="btn btn-lg" data-en="What we do">Čo robíme</a>
+      </div>
+      <div class="trust r" style="--d:280ms">
+        <span class="lab" data-en="Trusted by">Dôverujú nám</span>
+        <div class="names">
+          <span>Freedu</span><span>Examino</span><span>The Spot</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- optics diagram: one beam, four outputs -->
+    <div class="r" style="--d:120ms" aria-hidden="true">
+      <svg class="optics" viewBox="0 0 560 430" fill="none">
+        <defs>
+          <filter id="bloom" x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="3" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <g class="grid">
+          <path d="M48 62 V378"/><path d="M8 215 H540"/>
+        </g>
+        <g class="tick">
+          <path d="M42 120 H54"/><path d="M42 310 H54"/>
+          <path d="M120 209 V221"/><path d="M370 209 V221"/><path d="M470 209 V221"/>
+        </g>
+        <circle class="ring" cx="48" cy="215" r="25"/>
+        <circle class="ring" cx="48" cy="215" r="44" opacity=".45"/>
+
+        <!-- source -->
+        <circle cx="48" cy="215" r="14" fill="#ffb020" opacity=".14"/>
+        <circle cx="48" cy="215" r="5" fill="#e9ecef" filter="url(#bloom)"/>
+
+        <!-- prism -->
+        <path class="prism" d="M250 92 L314 330 L186 330 Z"/>
+
+        <!-- incoming beam -->
+        <path class="in draw" d="M48 215 H218"/>
+        <rect class="photon" x="53" y="212" width="6" height="6" rx="1"/>
+
+        <!-- refracted output -->
+        <path class="out draw d1" d="M288 236 L428 88"  stroke="#ffb020" style="color:#ffb020"/>
+        <path class="out draw d2" d="M288 236 L428 154" stroke="#ffd08a" style="color:#ffd08a"/>
+        <path class="out draw d3" d="M288 236 L428 220" stroke="#e9ecef" style="color:#e9ecef"/>
+        <path class="out draw d4" d="M288 236 L428 286" stroke="#7fd3de" style="color:#7fd3de"/>
+
+        <g class="lbl" style="animation-delay:1.5s">
+          <rect x="426" y="86"  width="5" height="5" fill="#ffb020"/><text x="446" y="93">WEB</text>
+          <rect x="426" y="152" width="5" height="5" fill="#ffd08a"/><text x="446" y="159">MOBILE</text>
+          <rect x="426" y="218" width="5" height="5" fill="#e9ecef"/><text x="446" y="225">SYSTEMS</text>
+          <rect x="426" y="284" width="5" height="5" fill="#7fd3de"/><text x="446" y="291">DESIGN</text>
+          <text x="26" y="268" fill="#4a515a" font-size="9.5">01</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════ 01 SLUŽBY ══════════════════════════════ -->
+<section class="sec" id="sluzby">
+  <div class="wrap">
+    <div class="head r">
+      <div>
+        <span class="lab"><span class="n">01</span> &nbsp;/&nbsp; <span data-en="What we do">Čo robíme</span></span>
+        <h2 data-en="Two tracks, <span class='s'>one team</span>.">Dve vetvy, <span class="s">jeden tím</span>.</h2>
+      </div>
+      <p class="note" data-en="Most of our time goes into client software. The rest goes into products we build ourselves. The two feed each other — and both are run by the same four people.">Väčšinu času venujeme klientskemu softvéru. Zvyšok investujeme do produktov, ktoré staviame sami. Obe vetvy sa navzájom živia — a obe robia tí istí štyria ľudia.</p>
+    </div>
+
+    <div class="tracks r" style="--d:80ms">
+      <div class="track">
+        <span class="k" data-en="Client work">Na zákazku</span>
+        <h3 data-en="Software built to your brief">Softvér na mieru</h3>
+        <p data-en="From the first conversation to production deployment. We take responsibility for the whole product, not for a single ticket in someone else's backlog.">Od prvého rozhovoru po produkčné nasadenie. Preberáme zodpovednosť za celý produkt, nie za jeden ticket v cudzom backlogu.</p>
+        <a href="#proces" class="more" data-en="How we work">Ako pracujeme
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8h11M9 4l4 4-4 4"/></svg>
+        </a>
+      </div>
+      <div class="track">
+        <span class="k" data-en="In-house">Vlastné projekty</span>
+        <h3 data-en="Products we build ourselves">Produkty, ktoré staviame sami</h3>
+        <p data-en="Tools we wanted to use ourselves and nobody had built yet. Maturant is the first one out.">Nástroje, ktoré sme sami chceli používať a nikto ich nepostavil. Maturant je prvý z nich.</p>
+        <a href="#projekty" class="more" data-en="See projects">Pozrieť projekty
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8h11M9 4l4 4-4 4"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <div class="caps r" style="--d:140ms">
+      <div class="cap">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="2.5" y="4" width="19" height="16" rx="1.5"/><path d="M2.5 9h19M6 6.5h.01M8.5 6.5h.01"/><path d="M7 13h6M7 16h9"/>
+        </svg>
+        <h4 data-en="Web platforms">Webové aplikácie</h4>
+        <p data-en="Production web systems — from the data model to deployment and monitoring.">Produkčné webové systémy — od dátového modelu po nasadenie a monitoring.</p>
+      </div>
+      <div class="cap">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="6" y="2.5" width="12" height="19" rx="2"/><path d="M10.5 5.5h3M10 18.5h4"/>
+        </svg>
+        <h4 data-en="Mobile apps">Mobilné aplikácie</h4>
+        <p data-en="iOS and Android apps that don't feel like a website in a wrapper.">Aplikácie pre iOS a Android, ktoré nepôsobia ako web v obale.</p>
+      </div>
+      <div class="cap">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="5" cy="6" r="2.5"/><circle cx="19" cy="6" r="2.5"/><circle cx="12" cy="18" r="2.5"/>
+          <path d="M7.2 7.4 10.4 15.9M16.8 7.4 13.6 15.9M7.5 6h9"/>
+        </svg>
+        <h4 data-en="Integrations &amp; automation">Integrácie &amp; automatizácia</h4>
+        <p data-en="Connecting systems that were never meant to talk. Internal tools, APIs, data flows.">Prepájame systémy, ktoré spolu nikdy nemali hovoriť. Interné nástroje, API, dátové toky.</p>
+      </div>
+      <div class="cap">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="2.5" y="2.5" width="19" height="19" rx="1.5"/><path d="M9 2.5v19M2.5 9h19"/>
+        </svg>
+        <h4 data-en="Product design">Produktový dizajn</h4>
+        <p data-en="UX and UI as part of engineering, not a layer on top. A prototype before the first line of code.">UX a UI ako súčasť vývoja, nie vrstva navrchu. Prototyp skôr než prvý riadok kódu.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════ 02 PROCES ══════════════════════════════ -->
+<section class="sec" id="proces">
+  <div class="wrap">
+    <div class="head r">
+      <div>
+        <span class="lab"><span class="n">02</span> &nbsp;/&nbsp; <span data-en="How we work">Ako pracujeme</span></span>
+        <h2 data-en="No surprises, <span class='s'>no black box</span>.">Bez prekvapení, <span class="s">bez čiernej skrinky</span>.</h2>
+      </div>
+      <p class="note" data-en="A small team means you talk to the people who write the code. No account managers in between, no status reports about status reports.">Malý tím znamená, že hovoríte priamo s ľuďmi, ktorí píšu kód. Žiadni account manageri medzitým, žiadne reporty o reportoch.</p>
+    </div>
+    <div class="steps r" style="--d:80ms">
+      <div class="step">
+        <span class="num">01</span>
+        <h4 data-en="Conversation">Rozhovor</h4>
+        <p data-en="We start with questions, not an estimate. We want to understand the problem before we propose a solution.">Začíname otázkami, nie odhadom. Chceme rozumieť problému skôr, než navrhneme riešenie.</p>
+      </div>
+      <div class="step">
+        <span class="num">02</span>
+        <h4 data-en="Design">Návrh</h4>
+        <p data-en="Architecture and a clickable prototype. Before any code is written, you know exactly what you are getting.">Architektúra a preklikateľný prototyp. Predtým, než sa píše kód, viete presne, čo dostanete.</p>
+      </div>
+      <div class="step">
+        <span class="num">03</span>
+        <h4 data-en="Build">Vývoj</h4>
+        <p data-en="Short cycles and continuous handover. You see the progress instead of reading about it.">Krátke cykly a priebežné odovzdávanie. Pokrok vidíte, nie o ňom čítate.</p>
+      </div>
+      <div class="step">
+        <span class="num">04</span>
+        <h4 data-en="Operations">Prevádzka</h4>
+        <p data-en="Deployment, monitoring, further development. A project does not end at handover.">Nasadenie, monitoring, ďalší rozvoj. Projekt sa odovzdaním nekončí.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════ 03 TÍM ══════════════════════════════ -->
+<section class="sec" id="tim">
+  <div class="wrap">
+    <div class="head r">
+      <div>
+        <span class="lab"><span class="n">03</span> &nbsp;/&nbsp; <span data-en="Team">Tím</span></span>
+        <h2 data-en="Four people. <span class='s'>No layers</span>.">Štyria ľudia. <span class="s">Žiadne vrstvy</span>.</h2>
+      </div>
+      <p class="note" data-en="Everyone here builds. The person who scopes your project is the person who ships it.">Každý tu stavia. Ten, kto váš projekt naceňuje, je ten, kto ho aj dodá.</p>
+    </div>
+    <div class="team r" style="--d:80ms">
+      <!-- ROLE = placeholder: replace [ ROLA ] with each person's real role -->
+      <div class="mem">
+        <div class="mark">
+          <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.25" aria-hidden="true"><path d="M32 12 L52 50 H12 Z" stroke-linejoin="round"/></svg>
+          <i>PŠ</i>
+        </div>
+        <h4>Peter Štefanec</h4>
+        <span class="role"><span class="ph" data-en="[ ROLE ]">[ ROLA ]</span></span>
+      </div>
+      <div class="mem">
+        <div class="mark">
+          <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.25" aria-hidden="true"><path d="M32 12 L52 50 H12 Z" stroke-linejoin="round"/></svg>
+          <i>AK</i>
+        </div>
+        <h4>Andrej Kazimir</h4>
+        <span class="role"><span class="ph" data-en="[ ROLE ]">[ ROLA ]</span></span>
+      </div>
+      <div class="mem">
+        <div class="mark">
+          <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.25" aria-hidden="true"><path d="M32 12 L52 50 H12 Z" stroke-linejoin="round"/></svg>
+          <i>FM</i>
+        </div>
+        <h4>Filip Múdry</h4>
+        <span class="role"><span class="ph" data-en="[ ROLE ]">[ ROLA ]</span></span>
+      </div>
+      <div class="mem">
+        <div class="mark">
+          <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.25" aria-hidden="true"><path d="M32 12 L52 50 H12 Z" stroke-linejoin="round"/></svg>
+          <i>JK</i>
+        </div>
+        <h4>Jakub Kelemen</h4>
+        <span class="role"><span class="ph" data-en="[ ROLE ]">[ ROLA ]</span></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════ 04 PARTNERI ══════════════════════════════ -->
+<section class="sec" id="partneri">
+  <div class="wrap">
+    <div class="head r">
+      <div>
+        <span class="lab"><span class="n">04</span> &nbsp;/&nbsp; <span data-en="Partners">Partneri</span></span>
+        <h2 data-en="Who we build <span class='s'>with</span>.">S kým to <span class="s">staviame</span>.</h2>
+      </div>
+      <p class="note" data-en="Long-term partnerships, not one-off jobs.">Dlhodobé spolupráce, nie jednorazové zákazky.</p>
+    </div>
+    <!-- Wordmarks are set in our own typeface — swap in the partners' real logos when you have them. -->
+    <div class="partners r" style="--d:80ms">
+      <div class="pt"><span class="wm">Freedu</span><span class="tag">Partner</span></div>
+      <div class="pt"><span class="wm">Examino</span><span class="tag">Partner</span></div>
+      <div class="pt"><span class="wm">The&nbsp;Spot</span><span class="tag">Partner</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════ 05 PROJEKTY (na samom spodku) ══════════════════════════════ -->
+<section class="sec" id="projekty">
+  <div class="wrap">
+    <div class="head r">
+      <div>
+        <span class="lab"><span class="n">05</span> &nbsp;/&nbsp; <span data-en="Projects">Projekty</span></span>
+        <h2 data-en="What we are <span class='s'>building now</span>.">Na čom <span class="s">práve staviame</span>.</h2>
+      </div>
+      <p class="note" data-en="Our own products, running and in development.">Naše vlastné produkty — v prevádzke aj vo vývoji.</p>
+    </div>
+    <div class="projs r" style="--d:80ms">
+      <article class="proj">
+        <svg class="rays" viewBox="0 0 300 320" fill="none" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">
+          <path d="M-20 300 L300 40" stroke="#ffb020" stroke-width="1" opacity=".28"/>
+          <path d="M-20 320 L300 96" stroke="#ffd08a" stroke-width="1" opacity=".2"/>
+          <path d="M20 340 L300 152" stroke="#e9ecef" stroke-width="1" opacity=".14"/>
+          <path d="M60 360 L300 208" stroke="#7fd3de" stroke-width="1" opacity=".16"/>
+        </svg>
+        <div class="top">
+          <span class="tag">01</span>
+          <span class="ph" data-en="[ STATUS ]">[ STAV ]</span>
+        </div>
+        <div class="body">
+          <h3>Maturant</h3>
+          <p class="desc"><span class="ph" data-en="[ ONE-LINE PROJECT DESCRIPTION ]">[ JEDNOVETOVÝ POPIS PROJEKTU ]</span></p>
+        </div>
+      </article>
+      <div class="slot">
+        <svg class="plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        <div>
+          <p class="t" data-en="More in progress">Ďalšie v príprave</p>
+          <p style="margin-top:12px"><span class="ph" data-en="[ NEXT PROJECT ]">[ ĎALŠÍ PROJEKT ]</span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ══════════════════════════════ FOOTER / KONTAKT ══════════════════════════════ -->
+<footer class="foot" id="kontakt">
+  <div class="wrap">
+    <h2 class="r" data-en="Have something to build? <span class='s'>Write to us</span>.">Máte čo stavať? <span class="s">Napíšte nám</span>.</h2>
+    <div class="contact r" style="--d:80ms">
+      <!-- CONTACT = placeholder: replace with your real address / phone -->
+      <div class="cbit">
+        <span class="lab" data-en="E-mail">E-mail</span>
+        <span class="ph" data-en="[ YOUR E-MAIL ]">[ VÁŠ E-MAIL ]</span>
+      </div>
+      <div class="cbit">
+        <span class="lab" data-en="Phone">Telefón</span>
+        <span class="ph" data-en="[ YOUR PHONE ]">[ VÁŠ TELEFÓN ]</span>
+      </div>
+      <div class="cbit">
+        <span class="lab" data-en="Where">Kde</span>
+        <span style="font-size:1.02rem;color:var(--fg-2)">Slovensko</span>
+      </div>
+    </div>
+    <div class="fbot">
+      <a href="#top" class="brand" aria-label="TechBeam">
+        <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <path d="M16 6 L26 25 H6 Z" stroke="#ffb020" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M0 17 H11.5" stroke="#e9ecef" stroke-width="1.6"/>
+        </svg>
+        <b>TechBeam</b>
+      </a>
+      <span class="c">&copy; 2026 TechBeam</span>
+      <nav class="flinks" aria-label="Pätička">
+        <a href="#sluzby" data-en="Services">Služby</a>
+        <a href="#proces" data-en="Process">Proces</a>
+        <a href="#tim" data-en="Team">Tím</a>
+        <a href="#partneri" data-en="Partners">Partneri</a>
+        <a href="#projekty" data-en="Projects">Projekty</a>
+      </nav>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---- sticky nav state ---- */
+  var nav = document.getElementById('nav');
+  var onScroll = function(){ nav.classList.toggle('on', window.scrollY > 12); };
+  onScroll(); window.addEventListener('scroll', onScroll, {passive:true});
+
+  /* ---- mobile menu ---- */
+  var burger = document.getElementById('burger'), menu = document.getElementById('menu');
+  var setMenu = function(open){
+    burger.setAttribute('aria-expanded', String(open));
+    menu.classList.toggle('on', open);
+    document.body.style.overflow = open ? 'hidden' : '';
+  };
+  burger.addEventListener('click', function(){ setMenu(burger.getAttribute('aria-expanded') !== 'true'); });
+  menu.addEventListener('click', function(e){ if (e.target.closest('a')) setMenu(false); });
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape') setMenu(false); });
+
+  /* ---- language: SK is authored inline, EN lives in data-en ---- */
+  var nodes = Array.prototype.slice.call(document.querySelectorAll('[data-en]'));
+  nodes.forEach(function(el){ el.dataset.sk = el.innerHTML; });
+
+  var META = {
+    sk: { title:'TechBeam — Softvér na zákazku',
+          desc:'TechBeam je štvorčlenné softvérové štúdio zo Slovenska. Staviame softvér na zákazku a popri tom vlastné produkty.' },
+    en: { title:'TechBeam — Custom software',
+          desc:'TechBeam is a four-person software studio from Slovakia. We build custom software and our own products alongside it.' }
+  };
+
+  function apply(lang){
+    nodes.forEach(function(el){ el.innerHTML = (lang === 'en' ? el.dataset.en : el.dataset.sk); });
+    document.documentElement.lang = lang;
+    document.title = META[lang].title;
+    var d = document.querySelector('meta[name="description"]');
+    if (d) d.setAttribute('content', META[lang].desc);
+    document.querySelectorAll('.lang button').forEach(function(b){
+      b.setAttribute('aria-pressed', String(b.dataset.lang === lang));
+    });
+    try { localStorage.setItem('tb-lang', lang); } catch(e){}
+  }
+
+  document.querySelectorAll('.lang button').forEach(function(b){
+    b.addEventListener('click', function(){ apply(b.dataset.lang); });
+  });
+
+  var saved;
+  try { saved = localStorage.getItem('tb-lang'); } catch(e){}
+  if (saved === 'en') apply('en');
+
+  /* ---- scroll reveal ---- */
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var targets = document.querySelectorAll('.r');
+  if (reduced || !('IntersectionObserver' in window)) {
+    targets.forEach(function(el){ el.classList.add('in'); });
+  } else {
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); }
+      });
+    }, {rootMargin:'0px 0px -8% 0px', threshold:0.08});
+    targets.forEach(function(el){ io.observe(el); });
+  }
+})();
+</script>
+</body>
+</html>
